@@ -32,7 +32,7 @@ public class VeicoloServiceImpl implements VeicoloService {
     public List<VeicoloDTO> getAllVeicoli() {
         List<Veicolo> veicoli = veicoloRepository.findAll();
         return veicoli.stream()
-                .map(veicoloMapper::toDTO) // Usa il mapper qui
+                .map(veicoloMapper::toDTO) 
                 .collect(Collectors.toList());
     }
 	

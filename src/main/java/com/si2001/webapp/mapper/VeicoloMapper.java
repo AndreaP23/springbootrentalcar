@@ -11,15 +11,14 @@ public class VeicoloMapper {
         if (veicolo == null) {
             return null;
         }
-        
 
-       return VeicoloDTO.builder()
+        return VeicoloDTO.builder()
                 .veicoloId(veicolo.getVeicoloId())
                 .marca(veicolo.getMarca())
                 .modello(veicolo.getModello())
                 .anno(veicolo.getAnno())
                 .targa(veicolo.getTarga())
-                .disponibilita(veicolo.isDisponibilita())
+                .disponibilita(veicolo.getDisponibilita() == 1) 
                 .build();
     }
 
@@ -28,14 +27,13 @@ public class VeicoloMapper {
             return null;
         }
 
-
         return Veicolo.builder()
                 .veicoloId(dto.getVeicoloId())
                 .marca(dto.getMarca())
                 .modello(dto.getModello())
                 .anno(dto.getAnno())
                 .targa(dto.getTarga())
-                .disponibilita(dto.isDisponibilita())
+                .disponibilita(dto.isDisponibilita() ? 1 : 0)
                 .build();
     }
 }

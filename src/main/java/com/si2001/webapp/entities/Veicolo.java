@@ -43,8 +43,9 @@ public class Veicolo implements Serializable {
     private String targa;
 
     @Column(name = "disponibilita")
-    private boolean disponibilita;  
+    private int disponibilita;  
   
+
     @OneToMany(mappedBy = "veicolo")
     private List<Prenotazione> prenotazioni;
     
