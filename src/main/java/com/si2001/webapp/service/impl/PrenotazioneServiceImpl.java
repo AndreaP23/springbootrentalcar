@@ -55,6 +55,7 @@ public class PrenotazioneServiceImpl implements PrenotazioneService {
         prenotazione.setDataInizio(prenotazioneDTO.getDataInizio());
         prenotazione.setDataFine(prenotazioneDTO.getDataFine());
         prenotazione.setVeicolo(veicolo);
+        prenotazione.setNote(prenotazioneDTO.getNote());
         prenotazioneRepository.save(prenotazione);
 
         veicolo.setDisponibilita(0); 
@@ -72,6 +73,57 @@ public class PrenotazioneServiceImpl implements PrenotazioneService {
         return prenotazioni.stream()
                 .map(prenotazioneMapper::toDTO)
                 .collect(Collectors.toList());
+    }
+
+
+    @Override
+    public void deletePrenotazione(Long prenotazioneId) {
+        Prenotazione prenotazione = prenotazioneRepository.findById(prenotazioneId)
+                .orElseThrow(() -> new IllegalArgumentException("Prenotazione non trovata"));
+
+        Veicolo veicolo = prenotazione.getVeicolo();
+        
+        veicolo.setDisponibilita(1); 
+        veicoloRepository.save(veicolo);
+
+
+        prenotazioneRepository.delete(prenotazione);
+    }
+
+
+
+	@Override
+	public List<PrenotazioneDTO> getPrenotazioniByUserId(Long userId) {
+	    List<Prenotazione> prenotazioni = prenotazioneRepository.findByUserUserId(userId);
+	    return prenotazioni.stream()
+	        .map(prenotazioneMapper::toDTO)
+	        .collect(Collectors.toList());
+	}
+
+
+	@Override
+	public PrenotazioneResponse modificaPrenotazione(Long prenotazioneId, PrenotazioneDTO prenotazioneDTO) {
+	    PrenotazioneResponse response = new PrenotazioneResponse();
+
+	    Prenotazione prenotazione = prenotazioneRepository.findById(prenotazioneId)
+	            .orElseThrow(() -> new IllegalArgumentException("Prenotazione non trovata"));
+
+	    prenotazione.setDataInizio(prenotazioneDTO.getDataInizio());
+	    prenotazione.setDataFine(prenotazioneDTO.getDataFine());
+	    prenotazione.setNote(prenotazioneDTO.getNote());
+
+	    prenotazioneRepository.save(prenotazione);
+	    
+	    response.setValidated(true);
+	    response.setSuccessMessage("Prenotazione modificata con successo.");
+	    return response;
+	}
+	
+	@Override
+    public PrenotazioneDTO getPrenotazioneById(Long prenotazioneId) {
+        Prenotazione prenotazione = prenotazioneRepository.findById(prenotazioneId)
+                .orElseThrow(() -> new IllegalArgumentException("Prenotazione non trovata"));
+        return prenotazioneMapper.toDTO(prenotazione);
     }
 
 

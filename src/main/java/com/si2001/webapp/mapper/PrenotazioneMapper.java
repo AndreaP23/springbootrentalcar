@@ -14,9 +14,11 @@ public class PrenotazioneMapper {
 
         PrenotazioneDTO.PrenotazioneDTOBuilder dtoBuilder = PrenotazioneDTO.builder()
                 .prenotazioneId(prenotazione.getPrenotazioneId())
+                .dataPrenotazione(prenotazione.getDataPrenotazione())
                 .dataInizio(prenotazione.getDataInizio())
                 .dataFine(prenotazione.getDataFine())
-                .userId(prenotazione.getUser().getUserId());
+                .userId(prenotazione.getUser().getUserId())
+                .note(prenotazione.getNote());
 
         if (prenotazione.getVeicolo() != null) {
             dtoBuilder.veicoloId(prenotazione.getVeicolo().getVeicoloId());

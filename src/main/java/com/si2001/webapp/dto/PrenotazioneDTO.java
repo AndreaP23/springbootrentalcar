@@ -12,6 +12,8 @@ public class PrenotazioneDTO {
     private Long prenotazioneId;
     private Long userId;     
     private Long veicoloId;  
+    private LocalDate dataPrenotazione;
     private LocalDate dataInizio;
     private LocalDate dataFine;
+    private String note;
 }

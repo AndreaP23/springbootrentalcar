@@ -50,4 +50,7 @@ public class Prenotazione implements Serializable {
 
     @Column(name = "data_fine")
     private LocalDate dataFine;
+    
+    @Column(name = "note")
+    private String note;
 }
