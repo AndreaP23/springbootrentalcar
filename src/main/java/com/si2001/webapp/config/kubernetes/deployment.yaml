@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rental-car
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: rental-car
+  template:
+    metadata:
+      labels:
+        app: rental-car
+    spec:
+      containers:
+        - name: rental-car
+          image: rental-car:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8090
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://host.docker.internal:3306/springbootrental
+            - name: SPRING_DATASOURCE_USERNAME
+              value: root
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: appb20001965

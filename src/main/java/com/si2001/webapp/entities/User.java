@@ -12,15 +12,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name="USER")
+@Table(name = "\"user\"")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -30,27 +28,40 @@ public class User implements Serializable {
 	private static final long serialVersionUID = 149790289743555628L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)     @Column(name = "user_id")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "user_id")
 	private Long userId;
-	@Column(name="nome")
+
+	@Column(name="nome")
 	private String nome;
-	@Column(name="cognome")
+
+	@Column(name="cognome")
 	private String cognome;
 
-	@Column(name="email", unique = true)  
+	@Column(name="email", unique = true)
 	private String email;
 
-	@Column(name = "phone")  
+	@Column(name = "phone")
 	private String telefono;
-	@Column(name="password")
+
+	@Column(name="password")
 	private String password;
 
-	@Column(name = "data_nascita")  
+	@Column(name = "data_nascita")
 	private LocalDate dataNascita;
 
-	@Column(name = "ruolo_id")  
+	@Column(name = "ruolo_id")
 	private Integer ruolo;
-	
+
 	@OneToMany(mappedBy= "user", fetch = FetchType.LAZY)
 	private List<Prenotazione> prenotazioni;
+
+	public List<String> getRuoli() {
+		if (ruolo == 1) {
+			return List.of("ROLE_1"); // SuperUser
+		} else if (ruolo == 2) {
+			return List.of("ROLE_2"); // Customer
+		}
+		return List.of();
+	}
 }

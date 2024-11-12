@@ -1,39 +1,18 @@
 package com.si2001.webapp.mapper;
 
-import com.si2001.webapp.dto.VeicoloDTO;
+
+import com.si2001.webapp.entities.User;
 import com.si2001.webapp.entities.Veicolo;
+import org.mapstruct.Mapper;
+import org.openapitools.model.UserDTO;
+import org.openapitools.model.VeicoloDTO;
 import org.springframework.stereotype.Component;
 
-@Component
-public class VeicoloMapper {
+@Mapper(componentModel = "spring")
+public interface VeicoloMapper {
 
-    public VeicoloDTO toDTO(Veicolo veicolo) {
-        if (veicolo == null) {
-            return null;
-        }
 
-        return VeicoloDTO.builder()
-                .veicoloId(veicolo.getVeicoloId())
-                .marca(veicolo.getMarca())
-                .modello(veicolo.getModello())
-                .anno(veicolo.getAnno())
-                .targa(veicolo.getTarga())
-                .disponibilita(veicolo.getDisponibilita() == 1) 
-                .build();
-    }
+    VeicoloDTO toDTO(Veicolo veicolo);
 
-    public Veicolo toEntity(VeicoloDTO dto) {
-        if (dto == null) {
-            return null;
-        }
-
-        return Veicolo.builder()
-                .veicoloId(dto.getVeicoloId())
-                .marca(dto.getMarca())
-                .modello(dto.getModello())
-                .anno(dto.getAnno())
-                .targa(dto.getTarga())
-                .disponibilita(dto.isDisponibilita() ? 1 : 0)
-                .build();
-    }
+    Veicolo toEntity(VeicoloDTO veicoloDTO);
 }

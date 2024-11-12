@@ -1,95 +1,106 @@
 package com.si2001.webapp.controller;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import com.si2001.webapp.dto.PrenotazioneDTO;
-import com.si2001.webapp.response.PrenotazioneResponse;
 import com.si2001.webapp.service.PrenotazioneService;
+import org.openapitools.api.PrenotazioniApi;
+import org.openapitools.model.PrenotazioneDTO;
+import org.openapitools.model.SearchPrenotazioni200Response;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/prenotazioni") 
-@CrossOrigin("http://localhost:4200")
-public class PrenotazioneController {
+public class PrenotazioneController implements PrenotazioniApi {
 
     @Autowired
     private PrenotazioneService prenotazioneService;
 
-    @GetMapping("/superuser/listprenotazioni")
-    public List<PrenotazioneDTO> showPrenotazioni() {
-        return prenotazioneService.getAllPrenotazioni();
+    @Override
+    public ResponseEntity<List<PrenotazioneDTO>> showPrenotazioni() {
+        List<PrenotazioneDTO> prenotazioni = prenotazioneService.getAllPrenotazioni();
+        return ResponseEntity.ok(prenotazioni);
     }
 
-    @GetMapping("/listprenotazioni/{userId}")
-    public List<PrenotazioneDTO> getPrenotazioniByUserId(@PathVariable Long userId) {
-        return prenotazioneService.getPrenotazioniByUserId(userId);
+    @Override
+    public ResponseEntity<SearchPrenotazioni200Response> searchPrenotazioni(Integer page, Integer size) {
+        if (page == null) page = 0;
+        if (size == null) size = 10;
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<PrenotazioneDTO> userPage = prenotazioneService.getAllPrenotazioni(pageable);
+        SearchPrenotazioni200Response response = new SearchPrenotazioni200Response();
+        response.setContent(userPage.getContent());
+        response.setTotalElements(userPage.getNumberOfElements());
+        response.setTotalPages(userPage.getTotalPages());
+        response.setSize(userPage.getSize());
+        response.setNumber(response.getTotalElements());
+        return ResponseEntity.ok(response);
+
     }
-    
-    @GetMapping("/listabyprenotazione/{prenotazioneId}")
-    public ResponseEntity<PrenotazioneDTO> getPrenotazioneById(@PathVariable Long prenotazioneId) {
-        PrenotazioneDTO prenotazioneDTO = prenotazioneService.getPrenotazioneById(prenotazioneId);
-        return ResponseEntity.ok(prenotazioneDTO);
+
+    @Override
+    public ResponseEntity<List<PrenotazioneDTO>> getPrenotazioniByUserId(Integer userId) {
+        List<PrenotazioneDTO> prenotazioni = prenotazioneService.getPrenotazioniByUserId(userId.longValue());
+
+        if (prenotazioni.isEmpty()) {
+            return ResponseEntity.status(404).body(null);
+        }
+        return ResponseEntity.ok(prenotazioni);
     }
 
-    @PostMapping("/salva")
-    public ResponseEntity<PrenotazioneResponse> salvaPrenotazione(
-            @RequestBody PrenotazioneDTO prenotazioneDTO) { 
+    @Override
+    public ResponseEntity<PrenotazioneDTO> getPrenotazioneById(Integer prenotazioneId) {
+        PrenotazioneDTO prenotazione = prenotazioneService.getPrenotazioneById(prenotazioneId.longValue());
+        if (prenotazione == null) {
+            return ResponseEntity.status(404).build();
+        }
+        return ResponseEntity.ok(prenotazione);
+    }
 
-        Long userId = prenotazioneDTO.getUserId();
-        /* 
-        System.out.println("Ricevuto userId: " + userId);
-        System.out.println("Ricevuto veicoloId: " + prenotazioneDTO.getVeicoloId());
-        System.out.println("Ricevuto dataInizio: " + prenotazioneDTO.getDataInizio());
-        System.out.println("Ricevuto dataFine: " + prenotazioneDTO.getDataFine());
-        System.out.println("Ricevuto note: " + prenotazioneDTO.getNote());
-        */
-
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null); 
+    //Manca un controllo sull'errore specifico
+    @Override
+    public ResponseEntity<Void> salvaPrenotazione(PrenotazioneDTO prenotazioneDTO) {
+        // Controlla se l'userId è presente
+        if (prenotazioneDTO.getUserId() == null) {
+            return ResponseEntity.status(400).build();
         }
 
-        PrenotazioneResponse response = prenotazioneService.salvaPrenotazione(userId, prenotazioneDTO);
-
-        if (response.isValidated()) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(response); 
-        } else {
-            return ResponseEntity.badRequest().body(response); 
+        if(prenotazioneDTO.getDataPrenotazione() == null || prenotazioneDTO.getDataInizio() == null || prenotazioneDTO.getDataFine() == null) {
+            return ResponseEntity.status(400).build();
         }
+
+
+        // Converte userId da Integer a Long
+        Long userId = prenotazioneDTO.getUserId().longValue();
+
+        prenotazioneService.salvaPrenotazione(userId, prenotazioneDTO);
+        return ResponseEntity.status(201).build();
     }
 
-    
-    @DeleteMapping("/superuser/deletePrenotazione/{id}")
-    public ResponseEntity<Map<String, String>> deletePrenotazione(@PathVariable("id") Long prenotazioneId) {
-        Map<String, String> response = new HashMap<>();
+
+    @Override
+    public ResponseEntity<Void> modificaPrenotazione(Integer prenotazioneId, PrenotazioneDTO prenotazioneDTO) {
         try {
-            prenotazioneService.deletePrenotazione(prenotazioneId);
-            response.put("message", "Prenotazione eliminata con successo.");
-            return ResponseEntity.ok(response);  
-        } catch (Exception e) {
-            response.put("error", "Errore: Prenotazione non trovata o non eliminata.");
-            return ResponseEntity.status(404).body(response);  
-        }
-    }
-    
-    @PutMapping("/modifica/{prenotazioneId}")
-    public ResponseEntity<PrenotazioneResponse> modificaPrenotazione(
-            @PathVariable Long prenotazioneId,
-            @RequestBody PrenotazioneDTO prenotazioneDTO) {
-
-        PrenotazioneResponse response = prenotazioneService.modificaPrenotazione(prenotazioneId, prenotazioneDTO);
-
-        if (response.isValidated()) {
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
+            prenotazioneService.modificaPrenotazione(prenotazioneId.longValue(), prenotazioneDTO);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(404).build();
         }
     }
 
-
+    @Override
+    public ResponseEntity<Void> deletePrenotazione(Integer id) {
+        if (!prenotazioneService.existsById(id.longValue())) {
+            return ResponseEntity.status(404).build();
+        }
+        prenotazioneService.deletePrenotazione(id.longValue());
+        return ResponseEntity.ok().build();
+    }
 }

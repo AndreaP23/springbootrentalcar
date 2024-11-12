@@ -1,11 +1,15 @@
 package com.si2001.webapp.service;
 
+import org.openapitools.model.VeicoloDTO;
+
 import java.util.List;
 
-import com.si2001.webapp.dto.VeicoloDTO;
+
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.openapitools.model.VeicoloDTO;
 
 public interface VeicoloService {
-
-	List<VeicoloDTO> getAllVeicoli();
-	
+	Page<VeicoloDTO> getAllVeicoli(Pageable pageable);
 }

@@ -1,43 +1,13 @@
 package com.si2001.webapp.mapper;
 
-import com.si2001.webapp.dto.UserDTO;
 import com.si2001.webapp.entities.User;
-import org.springframework.stereotype.Component;
+import org.openapitools.model.UserDTO;
+import org.mapstruct.Mapper;
 
-@Component
-public class UserMapper {
+@Mapper(componentModel = "spring")
+public interface UserMapper {
 
-    public UserDTO toDTO(User user) {
-        if (user == null) {
-            return null;
-        }
+    UserDTO toDTO(User user); // Converte User in UserDTO
 
-        return UserDTO.builder()
-                .userId(user.getUserId())
-                .nome(user.getNome())
-                .cognome(user.getCognome())
-                .email(user.getEmail())
-                .password(user.getPassword())
-                .telefono(user.getTelefono())
-                .dataNascita(user.getDataNascita())
-                .ruolo(user.getRuolo())
-                .build();
-    }
-
-    public User toEntity(UserDTO dto) {
-        if (dto == null) {
-            return null;
-        }
-
-        return User.builder()
-                .userId(dto.getUserId())
-                .nome(dto.getNome())
-                .cognome(dto.getCognome())
-                .email(dto.getEmail())
-                .password(dto.getPassword())
-                .telefono(dto.getTelefono())
-                .dataNascita(dto.getDataNascita())
-                .ruolo(dto.getRuolo())
-                .build();
-    }
+    User toEntity(UserDTO userDTO); // Converte UserDTO in User
 }

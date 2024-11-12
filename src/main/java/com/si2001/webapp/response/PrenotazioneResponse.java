@@ -4,9 +4,10 @@ import java.util.Map;
 
 public class PrenotazioneResponse {
 
-    private boolean validated; 
+    private boolean validated;
     private String successMessage; 
-    private Map<String, String> errorMessages; 
+    private Map<String, String> errorMessages;
+
 
     // Getters e Setters
 
@@ -33,4 +34,5 @@ public class PrenotazioneResponse {
     public void setErrorMessages(Map<String, String> errorMessages) {
         this.errorMessages = errorMessages;
     }
+
 }

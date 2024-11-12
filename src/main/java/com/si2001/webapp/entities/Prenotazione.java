@@ -37,7 +37,8 @@ public class Prenotazione implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-    
+
+    //ManyToOne di default è Eager
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "veicolo_id")
     private Veicolo veicolo;
@@ -54,3 +55,4 @@ public class Prenotazione implements Serializable {
     @Column(name = "note")
     private String note;
 }
+

@@ -1,0 +1,540 @@
+openapi: 3.0.0
+info:
+  title: Prenotazione API
+  description: API per la gestione delle prenotazioni e degli utenti nel sistema di RentalCar.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8090
+    description: Local server
+tags:
+  - name: Prenotazioni
+    description: API per gestire le prenotazioni
+  - name: Auth
+    description: Operazioni di autenticazione e gestione utenti
+  - name: SuperUser
+    description: Operazioni riservate al SuperUser
+  - name: Veicoli
+    description: API per gestire i veicoli
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Registra un nuovo utente
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDTO'
+      responses:
+        '200':
+          description: Utente registrato con successo
+        '400':
+          description: Dati non validi o errore di registrazione
+
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Effettua il login di un utente
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: L'email dell'utente
+                  example: "utente@example.com"
+                password:
+                  type: string
+                  description: La password dell'utente
+                  example: "password123"
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Login effettuato con successo
+        '401':
+          description: Email o password errati
+
+
+  /auth/superuser/listuser:
+    get:
+      tags:
+        - SuperUser
+      summary: Elenca tutti gli utenti (SuperUser)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Elenco degli utenti
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDTO'
+        '403':
+          description: Non autorizzato, token JWT mancante o non valido
+
+  /auth/superuser/delete/{id}:
+    delete:
+      tags:
+        - SuperUser
+      summary: Elimina un utente (SuperUser)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID dell'utente da eliminare
+      responses:
+        '200':
+          description: Utente eliminato con successo
+        '404':
+          description: Utente non trovato
+        '403':
+          description: Non autorizzato, token JWT mancante o non valido
+
+  /auth/cerca/userid/{userId}:
+    get:
+      tags:
+        - Auth
+      summary: Cerca utente per ID
+      operationId: getUserById
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID dell'utente da cercare
+      responses:
+        '200':
+          description: Utente trovato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
+        '404':
+          description: Utente non trovato
+        '403':
+          description: Non autorizzato, token JWT mancante o non valido
+
+  /auth/cerca/email:
+    get:
+      tags:
+        - Auth
+      summary: Cerca utente per email
+      operationId: getUserByEmail
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Email dell'utente da cercare
+      responses:
+        '200':
+          description: Utente trovato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
+        '404':
+          description: Utente non trovato
+        '403':
+          description: Non autorizzato, token JWT mancante o non valido
+
+  /auth/superuser/listauserPaginata:
+    get:
+      tags:
+        - SuperUser
+      summary: Elenca tutti gli utenti con paginazione
+      operationId: getUsersWithPagination
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          description: Numero della pagina (0 indica la prima pagina)
+          default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+          description: Numero di elementi per pagina
+          default: 10
+      responses:
+        '200':
+          description: Elenco degli utenti paginati
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserDTO'
+                  totalPages:
+                    type: integer
+                    description: Numero totale di pagine
+                  totalElements:
+                    type: integer
+                    description: Numero totale di elementi
+                  size:
+                    type: integer
+                    description: Numero di elementi per pagina
+                  number:
+                    type: integer
+                    description: Numero della pagina corrente
+        '403':
+          description: Non autorizzato, token JWT mancante o non valido
+
+
+
+  /listprenotazioni:
+    get:
+      tags:
+        - Prenotazioni
+      summary: Elenca tutte le prenotazioni
+      operationId: showPrenotazioni
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Elenco delle prenotazioni
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PrenotazioneDTO'
+        '403':
+          description: Non autorizzato, token JWT mancante o non valido
+        '500':
+          description: Errore interno del server
+
+  /listprenotazioniPaginata:
+    get:
+      tags:
+        - Prenotazioni
+      summary: Cerca e filtra le prenotazioni con paginazione
+      operationId: searchPrenotazioni
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          description: Numero della pagina (0 indica la prima pagina)
+          default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+          description: Numero di elementi per pagina
+          default: 10
+      responses:
+        '200':
+          description: Elenco delle prenotazioni paginate
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PrenotazioneDTO'
+                  totalPages:
+                    type: integer
+                    description: Numero totale di pagine
+                  totalElements:
+                    type: integer
+                    description: Numero totale di elementi
+                  size:
+                    type: integer
+                    description: Numero di elementi per pagina
+                  number:
+                    type: integer
+                    description: Numero di pagina corrente
+        '403':
+          description: Non autorizzato, token JWT mancante o non valido
+
+
+  /listprenotazioni/{userId}:
+    get:
+      tags:
+        - Prenotazioni
+      summary: Recupera prenotazioni per un determinato utente
+      operationId: getPrenotazioniByUserId
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID dell'utente
+      responses:
+        '200':
+          description: Lista delle prenotazioni per l'utente specificato
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PrenotazioneDTO'
+        '404':
+          description: Prenotazioni non trovate per l'utente specificato
+        '403':
+          description: Non autorizzato, token JWT mancante o non valido
+
+  /listabyprenotazione/{prenotazioneId}:
+    get:
+      tags:
+        - Prenotazioni
+      summary: Recupera i dettagli di una prenotazione
+      operationId: getPrenotazioneById
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: prenotazioneId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID della prenotazione
+      responses:
+        '200':
+          description: Dettagli della prenotazione
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrenotazioneDTO'
+        '404':
+          description: Prenotazione non trovata
+        '403':
+          description: Non autorizzato, token JWT mancante o non valido
+
+  /salva:
+    post:
+      tags:
+        - Prenotazioni
+      summary: Crea una nuova prenotazione
+      operationId: salvaPrenotazione
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Dati della prenotazione da creare
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrenotazioneDTO'
+      responses:
+        '201':
+          description: Prenotazione creata con successo
+        '400':
+          description: Dati non validi o errore di validazione
+        '401':
+          description: Non autorizzato, token JWT mancante o non valido
+        '403':
+          description: Non autorizzato, token JWT non valido
+
+  /superuser/deletePrenotazione/{id}:
+    delete:
+      tags:
+        - Prenotazioni
+      summary: Elimina una prenotazione (SuperUser)
+      operationId: deletePrenotazione
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID della prenotazione da eliminare
+      responses:
+        '200':
+          description: Prenotazione eliminata con successo
+        '404':
+          description: Prenotazione non trovata
+        '403':
+          description: Non autorizzato, token JWT non valido
+
+  /modifica/{prenotazioneId}:
+    put:
+      tags:
+        - Prenotazioni
+      summary: Modifica una prenotazione
+      operationId: modificaPrenotazione
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: prenotazioneId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID della prenotazione da modificare
+      requestBody:
+        description: Dati aggiornati della prenotazione
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrenotazioneDTO'
+      responses:
+        '200':
+          description: Prenotazione modificata con successo
+        '400':
+          description: Dati non validi o errore di validazione
+        '404':
+          description: Prenotazione non trovata
+        '403':
+          description: Non autorizzato, token JWT non valido
+
+  /listveicoli:
+    get:
+      tags:
+        - Veicoli
+      summary: Elenca tutti i veicoli con paginazione
+      operationId: listVeicoli
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          description: Numero della pagina (0 indica la prima pagina)
+          default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+          description: Numero di elementi per pagina
+          default: 10
+      responses:
+        '200':
+          description: Elenco dei veicoli paginati
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VeicoloDTO'
+                  totalPages:
+                    type: integer
+                    description: Numero totale di pagine
+                  totalElements:
+                    type: integer
+                    description: Numero totale di elementi
+                  size:
+                    type: integer
+                    description: Numero di elementi per pagina
+                  number:
+                    type: integer
+                    description: Numero di pagina corrente
+        '403':
+          description: Non autorizzato, token JWT mancante o non valido
+
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    UserDTO:
+      type: object
+      properties:
+        userId:
+          type: integer
+        email:
+          type: string
+        password:
+          type: string
+          format: password
+        nome:
+          type: string
+        cognome:
+          type: string
+        telefono:
+          type: string
+        ruolo:
+          type: integer
+        dataNascita:
+          type: string
+          format: date
+    PrenotazioneDTO:
+      type: object
+      required:
+        - veicoloId
+      properties:
+        prenotazioneId:
+          type: integer
+        userId:
+          type: integer
+        veicoloId:
+          type: integer
+        dataPrenotazione:
+          type: string
+          format: date
+        dataInizio:
+          type: string
+          format: date
+        dataFine:
+          type: string
+          format: date
+        note:
+          type: string
+    VeicoloDTO:
+      type: object
+      properties:
+        veicoloId:
+          type: integer
+          description: ID del veicolo
+        marca:
+          type: string
+          description: Marca del veicolo
+        modello:
+          type: string
+          description: Modello del veicolo
+        anno:
+          type: integer
+          description: Anno del veicolo
+        targa:
+          type: string
+          description: Targa del veicolo
+        disponibilita:
+          type: integer
+          description: Stato di disponibilità del veicolo
